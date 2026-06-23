@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       if (!grDocNo) { errors.push('Row with missing GR Document No skipped'); continue; }
 
       // Find matching PO line
-      const { data: poLine } = getSupabase()
+      const { data: poLine } = await getSupabase()
         .from('po_lines')
         .select('id')
         .eq('po_no', row['PO No.'])
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       // Upsert GR document (once per unique doc)
       if (!seenDocs.has(grDocNo)) {
         seenDocs.add(grDocNo);
-        const { data: grDoc, error: grErr } = getSupabase()
+        const { data: grDoc, error: grErr } = await getSupabase()
           .from('gr_documents')
           .upsert({
             gr_doc_no: grDocNo,
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
         // Auto-generate QR
         const code = shortCode(grDocNo);
-        const { error: qrErr } = getSupabase().from('qr_codes').upsert({
+        const { error: qrErr } = await getSupabase().from('qr_codes').upsert({
           gr_document_id: grDoc.id,
           code_value: code,
         }, { onConflict: 'gr_document_id' });
@@ -67,14 +67,14 @@ export async function POST(req: NextRequest) {
       }
 
       // Get GR doc id
-      const { data: grDoc } = getSupabase()
+      const { data: grDoc } = await getSupabase()
         .from('gr_documents')
         .select('id')
         .eq('gr_doc_no', grDocNo)
         .single();
 
       if (grDoc) {
-        const { error: lineErr } = getSupabase().from('gr_document_lines').upsert({
+        const { error: lineErr } = await getSupabase().from('gr_document_lines').upsert({
           gr_document_id: grDoc.id,
           po_line_id: poLine?.id || null,
           qty_received: row['Qty Received'],
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    getSupabase().from('import_logs').insert({
+    await getSupabase().from('import_logs').insert({
       import_type: 'mb51',
       file_name: req.headers.get('x-file-name') || null,
       rows_imported: rows.length,

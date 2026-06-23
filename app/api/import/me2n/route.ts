@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const errors: string[] = [];
 
     for (const row of rows) {
-      const { error } = getSupabase().from('po_lines').upsert(
+      const { error } = await getSupabase().from('po_lines').upsert(
         {
           po_no: row['PO No.'],
           line_no: row['Line'],
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    getSupabase().from('import_logs').insert({
+    await getSupabase().from('import_logs').insert({
       import_type: 'me2n',
       file_name: req.headers.get('x-file-name') || null,
       rows_imported: imported,

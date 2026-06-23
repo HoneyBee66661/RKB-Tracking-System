@@ -35,7 +35,7 @@ export default function ClerkLoginPage() {
     const data = await res.json();
     if (data.success) {
       sessionStorage.setItem('clerk_session', JSON.stringify(data.data));
-      router.push('/clerk/scan');
+      router.push('/scan');
     } else {
       setError(data.error || 'Login failed');
     }

@@ -11,7 +11,7 @@ export async function GET(
   try {
     const { code } = await params;
     // Resolve QR code
-    const { data: qr } = getSupabase()
+    const { data: qr } = await getSupabase()
       .from('qr_codes')
       .select('*, gr_documents(*, handover_records(*))')
       .eq('code_value', code)
@@ -22,7 +22,7 @@ export async function GET(
     }
 
     // Get lines with PO details
-    const { data: lines } = getSupabase()
+    const { data: lines } = await getSupabase()
       .from('gr_document_lines')
       .select('*, po_lines(po_no, line_no, material_desc, qty_ordered, supplier)')
       .eq('gr_document_id', qr.gr_document_id);

@@ -18,7 +18,7 @@ export default function Home() {
           </Link>
 
           <Link
-            href="/clerk/login"
+            href="/login"
             className="block w-full py-4 px-6 bg-gray-800 text-white rounded-xl text-lg font-semibold hover:bg-gray-900 transition"
           >
             Clerk Input App

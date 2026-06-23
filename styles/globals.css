@@ -5,3 +5,65 @@
   --color-warning: #d97706;
   --color-danger: #dc2626;
 }
+
+/* Status badges — used across dashboard and tracking */
+.badge-ordered {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-ready {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-delivered {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Clerk scan app — large tap targets for mobile/warehouse use */
+.clerk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  transition: background-color 0.15s;
+  cursor: pointer;
+  border: none;
+}
+
+.clerk-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* DHL-style tracker line */
+.tracker-line {
+  position: relative;
+  padding-left: 2rem;
+  padding-bottom: 1.5rem;
+  border-left: 2px solid #d1d5db;
+}
+
+.tracker-line:last-child {
+  border-left-color: #16a34a;
+}
+
+.tracker-line::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d1d5db;
+}
+
+.tracker-line:last-child::before {
+  background: #16a34a;
+}

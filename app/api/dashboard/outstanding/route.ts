@@ -7,13 +7,13 @@ import { getSupabase } from '@/lib/supabase';
 export async function GET() {
   try {
     // Get all PO lines grouped by order
-    const { data: poLines } = getSupabase()
+    const { data: poLines } = await getSupabase()
       .from('po_lines')
       .select('*')
       .order('created_at', { ascending: false });
 
     // Get all GR docs
-    const { data: grDocs } = getSupabase()
+    const { data: grDocs } = await getSupabase()
       .from('gr_documents')
       .select('*, handover_records(*)');
 

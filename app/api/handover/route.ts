@@ -17,8 +17,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check if already delivered FIRST — before any side effects
+    const { data: existing } = await getSupabase()
+      .from('handover_records')
+      .select('id')
+      .eq('gr_document_id', gr_document_id)
+      .maybeSingle();
+
+    if (existing) {
+      return NextResponse.json({ success: false, error: 'Already delivered' }, { status: 409 });
+    }
+
     // Verify clerk exists
-    const { data: clerk } = getSupabase()
+    const { data: clerk } = await getSupabase()
       .from('clerks')
       .select('name')
       .eq('id', delivered_by_clerk_id)
@@ -29,14 +40,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Clerk not found or inactive' }, { status: 404 });
     }
 
-    // Upload photo if provided
+    // Upload photo after idempotency check — avoids wasted I/O
     let photoUrl: string | null = null;
     if (photo_data_url) {
       const base64 = photo_data_url.replace(/^data:image\/\w+;base64,/, '');
       const buffer = Buffer.from(base64, 'base64');
       const fileName = `handover/${gr_document_id}_${Date.now()}.jpg`;
 
-      const { data: upload } = getSupabase().storage
+      const { data: upload } = await getSupabase().storage
         .from('handover-photos')
         .upload(fileName, buffer, { contentType: 'image/jpeg', upsert: true });
 
@@ -46,19 +57,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Check if already delivered
-    const { data: existing } = getSupabase()
-      .from('handover_records')
-      .select('id')
-      .eq('gr_document_id', gr_document_id)
-      .single();
-
-    if (existing) {
-      return NextResponse.json({ success: false, error: 'Already delivered' }, { status: 409 });
-    }
-
     // Create handover record
-    const { data: handover, error: hErr } = getSupabase()
+    const { data: handover, error: hErr } = await getSupabase()
       .from('handover_records')
       .insert({
         gr_document_id,
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     if (hErr) throw hErr;
 
     // Flip status to delivered
-    const { error: uErr } = getSupabase()
+    const { error: uErr } = await getSupabase()
       .from('gr_documents')
       .update({ status: 'delivered' })
       .eq('id', gr_document_id);

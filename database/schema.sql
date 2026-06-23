@@ -43,14 +43,24 @@ create table if not exists gr_documents (
   user_order_no   text not null,
   gr_date         date,
   status          text not null default 'ready' check (status in ('ready','delivered')),
-  qr_code_id      uuid,
   created_at      timestamptz not null default now()
 );
 create index idx_gr_doc_order on gr_documents(user_order_no);
 create index idx_gr_doc_status on gr_documents(status);
 comment on table gr_documents is 'Goods receipt documents imported from SAP MB51';
 
--- 5. GR DOCUMENT LINES (join: one GR doc → many material lines)
+-- 5. QR CODES (defined before gr_document_lines to break circular FK)
+create table if not exists qr_codes (
+  id              uuid primary key default gen_random_uuid(),
+  gr_document_id  uuid not null unique references gr_documents(id) on delete cascade,
+  code_value      text not null unique, -- the short lookup key
+  generated_at    timestamptz not null default now(),
+  print_count     integer not null default 0
+);
+create index idx_qr_gr_doc on qr_codes(gr_document_id);
+comment on table qr_codes is 'QR code records, one per GR document';
+
+-- 6. GR DOCUMENT LINES (join: one GR doc → many material lines)
 create table if not exists gr_document_lines (
   id              uuid primary key default gen_random_uuid(),
   gr_document_id  uuid not null references gr_documents(id) on delete cascade,
@@ -60,16 +70,6 @@ create table if not exists gr_document_lines (
 );
 create index idx_grdl_gr_doc on gr_document_lines(gr_document_id);
 comment on table gr_document_lines is 'Line-item detail within a GR document';
-
--- 6. QR CODES
-create table if not exists qr_codes (
-  id              uuid primary key default gen_random_uuid(),
-  gr_document_id  uuid not null unique references gr_documents(id) on delete cascade,
-  code_value      text not null unique, -- the short lookup key
-  generated_at    timestamptz not null default now(),
-  print_count     integer not null default 0
-);
-comment on table qr_codes is 'QR code records, one per GR document';
 
 -- 7. HANDOVER RECORDS
 create table if not exists handover_records (
@@ -82,6 +82,7 @@ create table if not exists handover_records (
   photo_evidence_url  text
 );
 create index idx_handover_gr on handover_records(gr_document_id);
+create unique index idx_handover_gr_unique on handover_records(gr_document_id); -- prevents duplicate handovers
 comment on table handover_records is 'Handover audit trail — clerk, timestamp, photo';
 
 -- 8. IMPORT LOGS

@@ -41,7 +41,7 @@ export default function ClerkScanPage() {
 
   useEffect(() => {
     const raw = sessionStorage.getItem('clerk_session');
-    if (!raw) { router.push('/clerk/login'); return; }
+    if (!raw) { router.push('/login'); return; }
     setSession(JSON.parse(raw));
   }, [router]);
 
@@ -152,7 +152,7 @@ export default function ClerkScanPage() {
 
   const doLogout = () => {
     sessionStorage.removeItem('clerk_session');
-    router.push('/clerk/login');
+    router.push('/login');
   };
 
   return (

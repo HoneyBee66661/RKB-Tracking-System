@@ -14,13 +14,13 @@ export async function GET(req: NextRequest) {
     }
 
     // Get PO lines for this order
-    const { data: poLines } = getSupabase()
+    const { data: poLines } = await getSupabase()
       .from('po_lines')
       .select('*')
       .eq('user_order_no', orderId);
 
     // Get GR documents with handover
-    const { data: grDocs } = getSupabase()
+    const { data: grDocs } = await getSupabase()
       .from('gr_documents')
       .select('*, handover_records(*)')
       .eq('user_order_no', orderId)

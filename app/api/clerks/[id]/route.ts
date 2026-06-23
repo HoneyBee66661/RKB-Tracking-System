@@ -11,7 +11,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const updates = await req.json();
-    const { error } = await (getSupabase().from('clerks') as any).update(updates).eq('id', id);
+    const { error } = await getSupabase().from('clerks').update(updates).eq('id', id);
     if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (e: any) {
