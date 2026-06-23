@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Warehouse Material Tracking System — MVP
 
-## Getting Started
+Track non-SAP-managed materials from PO raised → GR (SAP) → Handover, across 3 surfaces.
 
-First, run the development server:
+## Status Lifecycle
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+Ordered ────────► Ready at Warehouse ────────► Delivered
+(ME2N import)      (MB51 import —              (clerk scans QR
+                    auto, no manual              at handover +
+                    confirm step)                 photo evidence)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Layer | Choice |
+|---|---|
+| Frontend | Next.js 16 + React + Tailwind v4 |
+| Backend | Next.js API routes |
+| Database | Supabase (Postgres) |
+| Auth | Supabase Auth + Clerk PIN-based login |
+| Storage | Supabase Storage (handover photos) |
+| QR Gen | `qrcode` (npm) |
+| QR Scan | `html5-qrcode` + Honeywell keyboard-wedge |
+| Excel Import | SheetJS (`xlsx`) |
+| Label Print | `jsPDF` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+```bash
+cd wt-mvp
+cp .env.example .env.local
+# Fill in your Supabase URL + keys in .env.local
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+wt-mvp/
+├── app/
+│   ├── (admin)/dashboard/    # Admin dashboard — full detail, analytics
+│   ├── (clerk)/
+│   │   ├── login/            # Clerk selection + PIN screen
+│   │   └── scan/             # QR scan + handover with photo
+│   ├── (requestor)/track/    # DHL-style order tracking
+│   └── api/
+│       ├── import/           # ME2N (PO) & MB51 (GR) Excel import
+│       ├── gr-documents/     # GR doc listing with filters
+│       ├── handover/         # Record handover (scan + photo)
+│       ├── clerks/           # Clerk roster CRUD
+│       ├── clerk-session/    # PIN-based login
+│       ├── qr/               # QR code generation & resolution
+│       ├── tracking/         # Public order tracking lookup
+│       └── dashboard/        # Outstanding orders summary
+├── lib/
+│   ├── supabase.ts           # Lazy Supabase client
+│   └── types.ts              # Full TypeScript types
+├── database/
+│   ├── schema.sql            # 8 tables: po_lines, gr_documents, gr_document_lines, qr_codes, handover_records, clerks, users, import_logs
+│   └── seed.sql              # Sample data for dev
+└── docs/SPEC.md              # Full spec
+```
