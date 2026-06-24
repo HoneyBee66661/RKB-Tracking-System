@@ -23,6 +23,7 @@ async function seed() {
     { name: 'Siti', pin_hash: '5678' },
     { name: 'Rudi', pin_hash: '9012' },
     { name: 'Dewi', pin_hash: '2468' },
+    { name: 'Fahmi', pin_hash: '1234' },
   ];
 
   await db.from('warehousemen').delete().neq('id', '00000000-0000-0000-0000-000000000000');
@@ -202,7 +203,7 @@ async function seed() {
   console.log('  ORD-007 → Delivered');
   console.log('  ORD-008 → Ordered (no GR yet)');
   console.log('');
-  console.log('  Warehouseman PINs: Bambang=1234, Siti=5678, Rudi=9012, Dewi=2468');
+  console.log('  Warehouseman PINs: Bambang=1234, Siti=5678, Rudi=9012, Dewi=2468, Fahmi=1234');
 }
 
 seed().catch(console.error);

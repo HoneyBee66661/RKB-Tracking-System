@@ -13,15 +13,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'gr_document_id required' }, { status: 400 });
     }
 
-    // Check GR doc exists
+    // Check GR doc exists and has status 'ready'
     const { data: grDoc } = await getSupabase()
       .from('gr_documents')
-      .select('id, gr_doc_no')
+      .select('id, gr_doc_no, status')
       .eq('id', gr_document_id)
       .single();
 
     if (!grDoc) {
       return NextResponse.json({ success: false, error: 'GR document not found' }, { status: 404 });
+    }
+
+    if (grDoc.status !== 'ready') {
+      return NextResponse.json({ success: false, error: 'Only ready documents can generate QR codes' }, { status: 400 });
     }
 
     // Check if QR already exists

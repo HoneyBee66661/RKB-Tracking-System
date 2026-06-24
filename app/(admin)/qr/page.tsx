@@ -123,7 +123,7 @@ export default function QrManagementPage() {
 
       // Build multi-page PDF (99 x 48 mm per label)
       const pdf = new jsPDF({
-        orientation: 'portrait',
+        orientation: 'landscape',
         unit: 'mm',
         format: [99, 48],
       });
@@ -195,7 +195,7 @@ export default function QrManagementPage() {
           <button
             onClick={() => setTab('print')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-              tab === 'print' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'
+              tab === 'print' ? 'bg-[#CE1126] text-white' : 'bg-white text-gray-600 hover:bg-gray-100'
             }`}
           >
             Print / Reprint
@@ -203,7 +203,7 @@ export default function QrManagementPage() {
           <button
             onClick={() => setTab('generate')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-              tab === 'generate' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'
+              tab === 'generate' ? 'bg-[#CE1126] text-white' : 'bg-white text-gray-600 hover:bg-gray-100'
             }`}
           >
             Generate New QR
@@ -254,20 +254,13 @@ export default function QrManagementPage() {
               <div className="bg-white rounded-xl border overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50 border-b">
-                      <th className="w-10 p-3 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selected.size === qrCodes.length && qrCodes.length > 0}
-                          onChange={toggleSelectAll}
-                          className="w-4 h-4"
-                        />
-                      </th>
-                      <th className="text-left p-3 font-medium">GR Document</th>
-                      <th className="text-left p-3 font-medium">Order ID</th>
-                      <th className="text-left p-3 font-medium">QR Code</th>
-                      <th className="text-center p-3 font-medium">Status</th>
-                      <th className="text-center p-3 font-medium">Printed</th>
+                    <tr className="bg-red-50 border-b border-red-100">
+                      <th className="w-10 p-3"></th>
+                      <th className="text-left p-3 font-medium text-base">GR Document</th>
+                      <th className="text-left p-3 font-medium text-base">Order ID</th>
+                      <th className="text-left p-3 font-medium text-base">QR Code</th>
+                      <th className="text-center p-3 font-medium text-base">Status</th>
+                      <th className="text-center p-3 font-medium text-base">Printed</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -323,12 +316,12 @@ export default function QrManagementPage() {
               <div className="bg-white rounded-xl border overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50 border-b">
-                      <th className="text-left p-3 font-medium">GR Document</th>
-                      <th className="text-left p-3 font-medium">Order ID</th>
-                      <th className="text-left p-3 font-medium">Date</th>
-                      <th className="text-center p-3 font-medium">Status</th>
-                      <th className="text-center p-3 font-medium">Action</th>
+                    <tr className="bg-red-50 border-b border-red-100">
+                      <th className="text-left p-3 font-medium text-base">GR Document</th>
+                      <th className="text-left p-3 font-medium text-base">Order ID</th>
+                      <th className="text-left p-3 font-medium text-base">Date</th>
+                      <th className="text-center p-3 font-medium text-base">Status</th>
+                      <th className="text-center p-3 font-medium text-base">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">

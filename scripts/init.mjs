@@ -64,6 +64,7 @@ async function seed() {
       { name: 'Siti', pin_hash: '5678' },
       { name: 'Rudi', pin_hash: '9012' },
       { name: 'Dewi', pin_hash: '2468' },
+      { name: 'Fahmi', pin_hash: '1234' },
     ])
     .select();
   console.log(`  ✓ ${warehouseRows?.length || 0} warehousemen`);
@@ -179,7 +180,7 @@ async function seed() {
   console.log('  ORD-006 → Ready at Warehouse');
   console.log('  ORD-007 → Delivered');
   console.log('  ORD-008 → Ordered (no GR yet)');
-  console.log('  Warehouseman PINs: Bambang=1234, Siti=5678, Rudi=9012, Dewi=2468');
+  console.log('  Warehouseman PINs: Bambang=1234, Siti=5678, Rudi=9012, Dewi=2468, Fahmi=1234');
 }
 
 async function main() {

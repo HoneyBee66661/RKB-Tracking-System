@@ -6,7 +6,8 @@
 insert into warehousemen (name, pin_hash, active) values
   ('Bambang', '1234', true),
   ('Siti', '5678', true),
-  ('Rudi', '9012', true);
+  ('Rudi', '9012', true),
+  ('Fahmi', '1234', true);
 
 -- Users
 insert into users (name, role, contact) values
