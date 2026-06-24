@@ -1,18 +1,18 @@
 export const dynamic = 'force-dynamic';
 
-// POST /api/handover — Record a handover (clerk scans QR + captures photo)
-// Expects: { gr_document_id, delivered_to, delivered_by_clerk_id, photo_data_url? }
+// POST /api/handover — Record a handover (warehouseman scans QR + captures photo)
+// Expects: { gr_document_id, delivered_to, delivered_by_warehouseman_id, photo_data_url? }
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
-    const { gr_document_id, delivered_to, delivered_by_clerk_id, photo_data_url } = await req.json();
+    const { gr_document_id, delivered_to, delivered_by_warehouseman_id, photo_data_url } = await req.json();
 
-    if (!gr_document_id || !delivered_by_clerk_id) {
+    if (!gr_document_id || !delivered_by_warehouseman_id) {
       return NextResponse.json(
-        { success: false, error: 'gr_document_id and delivered_by_clerk_id are required' },
+        { success: false, error: 'gr_document_id and delivered_by_warehouseman_id are required' },
         { status: 400 }
       );
     }
@@ -28,16 +28,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Already delivered' }, { status: 409 });
     }
 
-    // Verify clerk exists
-    const { data: clerk } = await getSupabase()
-      .from('clerks')
+    // Verify warehouseman exists
+    const { data: warehouseman } = await getSupabase()
+      .from('warehousemen')
       .select('name')
-      .eq('id', delivered_by_clerk_id)
+      .eq('id', delivered_by_warehouseman_id)
       .eq('active', true)
       .single();
 
-    if (!clerk) {
-      return NextResponse.json({ success: false, error: 'Clerk not found or inactive' }, { status: 404 });
+    if (!warehouseman) {
+      return NextResponse.json({ success: false, error: 'Warehouseman not found or inactive' }, { status: 404 });
     }
 
     // Upload photo after idempotency check — avoids wasted I/O
@@ -63,8 +63,8 @@ export async function POST(req: NextRequest) {
       .insert({
         gr_document_id,
         delivered_to,
-        delivered_by_clerk_id,
-        delivered_by_name: clerk.name,
+        delivered_by_warehouseman_id,
+        delivered_by_name: warehouseman.name,
         photo_evidence_url: photoUrl,
       })
       .select()

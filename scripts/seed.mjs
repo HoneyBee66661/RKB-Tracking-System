@@ -17,17 +17,17 @@ const db = createClient(url, key, { auth: { persistSession: false } });
 async function seed() {
   console.log('Seeding database...\n');
 
-  // ── 1. Clerks (PINs stored as plaintext for MVP) ──
-  const clerks = [
+  // ── 1. Warehousemen (PINs stored as plaintext for MVP) ──
+  const warehousemen = [
     { name: 'Bambang', pin_hash: '1234' },
     { name: 'Siti', pin_hash: '5678' },
     { name: 'Rudi', pin_hash: '9012' },
     { name: 'Dewi', pin_hash: '2468' },
   ];
 
-  await db.from('clerks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-  const { data: clerkRows } = await db.from('clerks').insert(clerks).select();
-  console.log(`  ✓ ${clerkRows?.length || 0} clerks`);
+  await db.from('warehousemen').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const { data: warehouseRows } = await db.from('warehousemen').insert(warehousemen).select();
+  console.log(`  ✓ ${warehouseRows?.length || 0} warehousemen`);
 
   // ── 2. Users ──
   const users = [
@@ -153,7 +153,7 @@ async function seed() {
     {
       gr_document_id: grDocMap['GR-2025-001'],
       delivered_to: 'Produksi Line A',
-      delivered_by_clerk_id: clerkRows?.find(c => c.name === 'Bambang')?.id || null,
+      delivered_by_warehouseman_id: warehouseRows?.find(c => c.name === 'Bambang')?.id || null,
       delivered_by_name: 'Bambang',
       delivered_at: '2025-06-21T08:30:00Z',
       photo_evidence_url: null,
@@ -161,7 +161,7 @@ async function seed() {
     {
       gr_document_id: grDocMap['GR-2025-005'],
       delivered_to: 'Site Kalimantan',
-      delivered_by_clerk_id: clerkRows?.find(c => c.name === 'Siti')?.id || null,
+      delivered_by_warehouseman_id: warehouseRows?.find(c => c.name === 'Siti')?.id || null,
       delivered_by_name: 'Siti',
       delivered_at: '2025-06-25T10:15:00Z',
       photo_evidence_url: null,
@@ -169,7 +169,7 @@ async function seed() {
     {
       gr_document_id: grDocMap['GR-2025-006'],
       delivered_to: 'Produksi Line A',
-      delivered_by_clerk_id: clerkRows?.find(c => c.name === 'Rudi')?.id || null,
+      delivered_by_warehouseman_id: warehouseRows?.find(c => c.name === 'Rudi')?.id || null,
       delivered_by_name: 'Rudi',
       delivered_at: '2025-06-26T07:45:00Z',
       photo_evidence_url: null,
@@ -202,7 +202,7 @@ async function seed() {
   console.log('  ORD-007 → Delivered');
   console.log('  ORD-008 → Ordered (no GR yet)');
   console.log('');
-  console.log('  Clerk PINs: Bambang=1234, Siti=5678, Rudi=9012, Dewi=2468');
+  console.log('  Warehouseman PINs: Bambang=1234, Siti=5678, Rudi=9012, Dewi=2468');
 }
 
 seed().catch(console.error);

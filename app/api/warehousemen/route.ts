@@ -1,9 +1,9 @@
 export const dynamic = 'force-dynamic';
 
-// CRUD for clerk roster (admin only)
-// GET  /api/clerks — list all clerks
-// POST /api/clerks — create new clerk (name, pin)
-// PATCH /api/clerks/[id] — update (deactivate, reset PIN)
+// CRUD for warehouseman roster (admin only)
+// GET  /api/warehousemen — list all warehousemen
+// POST /api/warehousemen — create new warehouseman (name, pin)
+// PATCH /api/warehousemen/[id] — update (deactivate, reset PIN)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
@@ -11,7 +11,7 @@ import { getSupabase } from '@/lib/supabase';
 export async function GET() {
   try {
     const { data, error } = await getSupabase()
-      .from('clerks')
+      .from('warehousemen')
       .select('id, name, active, created_at')
       .order('name');
 
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { data, error } = await getSupabase()
-      .from('clerks')
+      .from('warehousemen')
       .insert({ name, pin_hash: pin, active: true })
       .select('id, name, active, created_at')
       .single();

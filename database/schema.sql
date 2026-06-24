@@ -1,15 +1,15 @@
 -- Warehouse Material Tracking System — Database Schema
 -- Supabase (Postgres)
 
--- 1. CLERKS (shared device identity)
-create table if not exists clerks (
+-- 1. WAREHOUSEMEN (shared device identity)
+create table if not exists warehousemen (
   id          uuid primary key default gen_random_uuid(),
   name        text not null,
   pin_hash    text not null, -- bcrypt hash of 4-digit PIN
   active      boolean not null default true,
   created_at  timestamptz not null default now()
 );
-comment on table clerks is 'Warehouse clerk roster for shared-scanner PIN login';
+comment on table warehousemen is 'Warehouseman roster for shared-scanner PIN login';
 
 -- 2. USERS (admins & requestors)
 create table if not exists users (
@@ -76,14 +76,14 @@ create table if not exists handover_records (
   id                  uuid primary key default gen_random_uuid(),
   gr_document_id      uuid not null references gr_documents(id) on delete cascade,
   delivered_to        text,
-  delivered_by_clerk_id uuid references clerks(id),
-  delivered_by_name   text, -- snapshot of clerk name at time of handover
+  delivered_by_warehouseman_id uuid references warehousemen(id),
+  delivered_by_name   text, -- snapshot of warehouseman name at time of handover
   delivered_at        timestamptz not null default now(),
   photo_evidence_url  text
 );
 create index idx_handover_gr on handover_records(gr_document_id);
 create unique index idx_handover_gr_unique on handover_records(gr_document_id); -- prevents duplicate handovers
-comment on table handover_records is 'Handover audit trail — clerk, timestamp, photo';
+comment on table handover_records is 'Handover audit trail — warehouseman, timestamp, photo';
 
 -- 8. IMPORT LOGS
 create table if not exists import_logs (

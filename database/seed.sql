@@ -1,9 +1,9 @@
 -- Seed data for development/testing
 
--- Clerks (PINs are bcrypt hashes of 4-digit codes)
+-- Warehousemen (PINs are bcrypt hashes of 4-digit codes)
 -- PIN 1234 -> $2a$10$... (generate with: node -e "console.log(require('bcryptjs').hashSync('1234',10))")
 -- For dev, we'll use plaintext check in the API since this is an MVP
-insert into clerks (name, pin_hash, active) values
+insert into warehousemen (name, pin_hash, active) values
   ('Bambang', '1234', true),
   ('Siti', '5678', true),
   ('Rudi', '9012', true);

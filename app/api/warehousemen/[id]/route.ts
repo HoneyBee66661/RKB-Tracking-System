@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-// PATCH /api/clerks/[id] — Update clerk (deactivate, reset PIN)
+// PATCH /api/warehousemen/[id] — Update warehouseman (deactivate, reset PIN)
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
 
@@ -11,7 +11,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const updates = await req.json();
-    const { error } = await getSupabase().from('clerks').update(updates).eq('id', id);
+    const { error } = await getSupabase().from('warehousemen').update(updates).eq('id', id);
     if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (e: any) {

@@ -5,33 +5,33 @@ import { getSupabase } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
-    const { clerk_id, pin } = await req.json();
-    if (!clerk_id || !pin) {
-      return NextResponse.json({ success: false, error: 'clerk_id and pin required' }, { status: 400 });
+    const { warehouseman_id, pin } = await req.json();
+    if (!warehouseman_id || !pin) {
+      return NextResponse.json({ success: false, error: 'warehouseman_id and pin required' }, { status: 400 });
     }
 
-    const { data: clerk } = await getSupabase()
-      .from('clerks')
+    const { data: warehouseman } = await getSupabase()
+      .from('warehousemen')
       .select('*')
-      .eq('id', clerk_id)
+      .eq('id', warehouseman_id)
       .eq('active', true)
       .single();
 
-    if (!clerk) {
-      return NextResponse.json({ success: false, error: 'Clerk not found' }, { status: 401 });
+    if (!warehouseman) {
+      return NextResponse.json({ success: false, error: 'Warehouseman not found' }, { status: 401 });
     }
 
-    if (clerk.pin_hash !== pin) {
+    if (warehouseman.pin_hash !== pin) {
       return NextResponse.json({ success: false, error: 'Invalid PIN' }, { status: 401 });
     }
 
-    const token = Buffer.from(`clerk:${clerk_id}:${Date.now()}`).toString('base64');
+    const token = Buffer.from(`warehouseman:${warehouseman_id}:${Date.now()}`).toString('base64');
     const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
 
     return NextResponse.json({
       success: true,
       data: {
-        clerk: { id: clerk.id, name: clerk.name },
+        warehouseman: { id: warehouseman.id, name: warehouseman.name },
         token,
         expires_at: expiresAt,
       },

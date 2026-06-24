@@ -56,9 +56,9 @@ async function runSchema() {
 async function seed() {
   console.log('\nSeeding database...\n');
 
-  // ── 1. Clerks ──
-  await db.from('clerks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-  const { data: clerkRows } = await db.from('clerks')
+  // ── 1. Warehousemen ──
+  await db.from('warehousemen').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const { data: warehouseRows } = await db.from('warehousemen')
     .insert([
       { name: 'Bambang', pin_hash: '1234' },
       { name: 'Siti', pin_hash: '5678' },
@@ -66,7 +66,7 @@ async function seed() {
       { name: 'Dewi', pin_hash: '2468' },
     ])
     .select();
-  console.log(`  ✓ ${clerkRows?.length || 0} clerks`);
+  console.log(`  ✓ ${warehouseRows?.length || 0} warehousemen`);
 
   // ── 2. Users ──
   await db.from('users').delete().neq('id', '00000000-0000-0000-0000-000000000000');
@@ -153,9 +153,9 @@ async function seed() {
 
   // ── 7. Handover Records ──
   const handovers = [
-    { gr_document_id: grDocMap['GR-2025-001'], delivered_to: 'Produksi Line A', delivered_by_clerk_id: clerkRows?.find(c => c.name === 'Bambang')?.id || null, delivered_by_name: 'Bambang', delivered_at: '2025-06-21T08:30:00Z', photo_evidence_url: null },
-    { gr_document_id: grDocMap['GR-2025-005'], delivered_to: 'Site Kalimantan', delivered_by_clerk_id: clerkRows?.find(c => c.name === 'Siti')?.id || null, delivered_by_name: 'Siti', delivered_at: '2025-06-25T10:15:00Z', photo_evidence_url: null },
-    { gr_document_id: grDocMap['GR-2025-006'], delivered_to: 'Produksi Line A', delivered_by_clerk_id: clerkRows?.find(c => c.name === 'Rudi')?.id || null, delivered_by_name: 'Rudi', delivered_at: '2025-06-26T07:45:00Z', photo_evidence_url: null },
+    { gr_document_id: grDocMap['GR-2025-001'], delivered_to: 'Produksi Line A', delivered_by_warehouseman_id: warehouseRows?.find(c => c.name === 'Bambang')?.id || null, delivered_by_name: 'Bambang', delivered_at: '2025-06-21T08:30:00Z', photo_evidence_url: null },
+    { gr_document_id: grDocMap['GR-2025-005'], delivered_to: 'Site Kalimantan', delivered_by_warehouseman_id: warehouseRows?.find(c => c.name === 'Siti')?.id || null, delivered_by_name: 'Siti', delivered_at: '2025-06-25T10:15:00Z', photo_evidence_url: null },
+    { gr_document_id: grDocMap['GR-2025-006'], delivered_to: 'Produksi Line A', delivered_by_warehouseman_id: warehouseRows?.find(c => c.name === 'Rudi')?.id || null, delivered_by_name: 'Rudi', delivered_at: '2025-06-26T07:45:00Z', photo_evidence_url: null },
   ];
   const { data: handoverRows, error: hErr } = await db.from('handover_records').insert(handovers).select();
   if (hErr) { console.error(`  ✗ Handovers: ${hErr.message}`); process.exit(1); }
@@ -179,7 +179,7 @@ async function seed() {
   console.log('  ORD-006 → Ready at Warehouse');
   console.log('  ORD-007 → Delivered');
   console.log('  ORD-008 → Ordered (no GR yet)');
-  console.log('  Clerk PINs: Bambang=1234, Siti=5678, Rudi=9012, Dewi=2468');
+  console.log('  Warehouseman PINs: Bambang=1234, Siti=5678, Rudi=9012, Dewi=2468');
 }
 
 async function main() {

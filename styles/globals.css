@@ -22,25 +22,6 @@
   color: #065f46;
 }
 
-/* Clerk scan app — large tap targets for mobile/warehouse use */
-.clerk-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  font-size: 1.125rem;
-  transition: background-color 0.15s;
-  cursor: pointer;
-  border: none;
-}
-
-.clerk-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 /* DHL-style tracker line */
 .tracker-line {
   position: relative;

@@ -6,7 +6,7 @@ export type GrStatus = 'ready' | 'delivered';
 
 export type ImportType = 'me2n' | 'mb51';
 
-export interface Clerk {
+export interface Warehouseman {
   id: string;
   name: string;
   pin_hash: string;
@@ -62,7 +62,7 @@ export interface HandoverRecord {
   id: string;
   gr_document_id: string;
   delivered_to: string | null;
-  delivered_by_clerk_id: string | null;
+  delivered_by_warehouseman_id: string | null;
   delivered_by_name: string | null;
   delivered_at: string;
   photo_evidence_url: string | null;
@@ -96,8 +96,8 @@ export interface OutstandingOrder {
   days_outstanding: number;
 }
 
-export interface ClerkSession {
-  clerk: Clerk;
+export interface WarehousemanSession {
+  warehouseman: Warehouseman;
   token: string; // simple session token
   expires_at: string;
 }

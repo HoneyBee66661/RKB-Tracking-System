@@ -23,7 +23,7 @@ interface GrManifest {
   }[];
 }
 
-export default function ClerkScanPage() {
+export default function WarehousemanScanPage() {
   const [session, setSession] = useState<any>(null);
   const [inputMode, setInputMode] = useState<'scan' | 'manual'>('scan');
   const [manualCode, setManualCode] = useState('');
@@ -40,7 +40,7 @@ export default function ClerkScanPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('clerk_session');
+    const raw = sessionStorage.getItem('warehouseman_session');
     if (!raw) { router.push('/login'); return; }
     setSession(JSON.parse(raw));
   }, [router]);
@@ -119,7 +119,7 @@ export default function ClerkScanPage() {
       body: JSON.stringify({
         gr_document_id: manifest.gr_documents.id,
         delivered_to: deliveredTo,
-        delivered_by_clerk_id: session.clerk.id,
+        delivered_by_warehouseman_id: session.warehouseman.id,
         photo_data_url: photoData,
       }),
     });
@@ -151,7 +151,13 @@ export default function ClerkScanPage() {
   };
 
   const doLogout = () => {
-    sessionStorage.removeItem('clerk_session');
+    sessionStorage.removeItem('warehouseman_session');
+    router.push('/login');
+  };
+
+  // Switch current warehouseman without full device logout
+  const switchOperator = () => {
+    sessionStorage.removeItem('warehouseman_session');
     router.push('/login');
   };
 
@@ -159,9 +165,18 @@ export default function ClerkScanPage() {
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-10 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-bold">Clerk App</h1>
+        <h1 className="text-lg font-bold">Warehouse Scanner</h1>
         <div className="flex items-center gap-3">
-          {session && <span className="text-sm text-gray-500">{session.clerk.name}</span>}
+          {session && (
+            <button
+              onClick={switchOperator}
+              className="flex items-center gap-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-1.5 transition"
+              title="Switch operator"
+            >
+              <span className="text-gray-600">{session.warehouseman.name}</span>
+              <span className="text-xs text-gray-400">⇄</span>
+            </button>
+          )}
           <button onClick={doLogout} className="text-sm text-red-600 hover:underline">Logout</button>
         </div>
       </header>
@@ -198,17 +213,17 @@ export default function ClerkScanPage() {
               onKeyDown={e => e.key === 'Enter' && resolveCode(manualCode)}
             />
             <div className="flex gap-2 mt-2">
-              <button onClick={() => resolveCode(manualCode)} className="clerk-btn flex-1 bg-blue-600 text-white">
+              <button onClick={() => resolveCode(manualCode)} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition">
                 Look Up
               </button>
-              <button onClick={() => setInputMode('scan')} className="clerk-btn flex-1 bg-gray-200">
+              <button onClick={() => setInputMode('scan')} className="flex-1 py-3 bg-gray-200 rounded-xl font-semibold hover:bg-gray-300 transition">
                 Scan
               </button>
             </div>
           </div>
         )}
 
-        {/* Loading */}
+        {/* Error */}
         {error && !manifest && (
           <div className="bg-red-100 border border-red-300 rounded-xl p-4 text-red-700 text-center">{error}</div>
         )}
@@ -246,7 +261,7 @@ export default function ClerkScanPage() {
             <div>
               <label className="block text-sm font-medium mb-1">Photo Evidence</label>
               {!photoData ? (
-                <button onClick={startCamera} className="clerk-btn w-full bg-gray-200 hover:bg-gray-300">
+                <button onClick={startCamera} className="w-full py-3 bg-gray-200 rounded-xl font-semibold hover:bg-gray-300 transition">
                   📷 Take Photo
                 </button>
               ) : (
@@ -266,7 +281,7 @@ export default function ClerkScanPage() {
             <button
               onClick={handleHandover}
               disabled={submitting}
-              className="clerk-btn w-full bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+              className="w-full py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition disabled:opacity-50"
             >
               {submitting ? 'Processing...' : '✅ Confirm Handover'}
             </button>
@@ -279,7 +294,7 @@ export default function ClerkScanPage() {
             <div className="text-6xl mb-4">✅</div>
             <h2 className="text-2xl font-bold mb-2">Handover Complete!</h2>
             <p className="text-gray-500 mb-6">GR document has been marked as delivered</p>
-            <button onClick={resetForm} className="clerk-btn w-full bg-blue-600 text-white">
+            <button onClick={resetForm} className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition">
               Scan Next
             </button>
           </div>
