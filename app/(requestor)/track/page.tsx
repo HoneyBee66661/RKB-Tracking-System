@@ -58,7 +58,9 @@ export default function TrackingPage() {
       <header className="bg-white border-b">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-bold">Track Your Order</h1>
-          <Link href="/" className="text-sm text-blue-600 hover:underline">Home</Link>
+          <Link href="/" className="text-gray-500 hover:text-gray-800 transition" title="Home">
+            <img src="/images/home-icon.svg" alt="Home" width="20" height="20" />
+          </Link>
         </div>
       </header>
 

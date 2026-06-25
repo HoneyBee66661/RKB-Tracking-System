@@ -31,6 +31,7 @@ export default function DashboardPage() {
   const [wmError, setWmError] = useState('');
   const [wmMsg, setWmMsg] = useState('');
   const [adding, setAdding] = useState(false);
+  const [removing, setRemoving] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/dashboard/outstanding')
@@ -86,6 +87,27 @@ export default function DashboardPage() {
     }
   };
 
+  const removeWarehouseman = async (wm: Warehouseman) => {
+    if (!confirm(`Remove "${wm.name}" permanently? This cannot be undone.`)) return;
+    setRemoving(wm.id);
+    setWmError('');
+    setWmMsg('');
+    try {
+      const res = await fetch(`/api/warehousemen/${wm.id}`, { method: 'DELETE' });
+      const d = await res.json();
+      if (d.success) {
+        setWarehousemen(prev => prev.filter(w => w.id !== wm.id));
+        setWmMsg(`Removed ${wm.name}`);
+      } else {
+        setWmError(d.error || 'Failed to remove');
+      }
+    } catch {
+      setWmError('Network error');
+    } finally {
+      setRemoving(null);
+    }
+  };
+
   const toggleActive = async (wm: Warehouseman) => {
     try {
       const res = await fetch(`/api/warehousemen/${wm.id}`, {
@@ -113,9 +135,13 @@ export default function DashboardPage() {
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-bold">Warehouse Dashboard</h1>
-          <div className="flex items-center gap-4">
-            <Link href="/qr" className="text-sm text-blue-600 hover:underline">QR Labels</Link>
-            <Link href="/" className="text-sm text-blue-600 hover:underline">Home</Link>
+          <div className="flex items-center gap-3">
+            <Link href="/qr" className="text-gray-500 hover:text-gray-800 transition" title="QR Labels">
+              <img src="/images/qr-icon.svg" alt="QR" width="20" height="20" />
+            </Link>
+            <Link href="/" className="text-gray-500 hover:text-gray-800 transition" title="Home">
+              <img src="/images/home-icon.svg" alt="Home" width="20" height="20" />
+            </Link>
           </div>
         </div>
       </header>
@@ -276,7 +302,7 @@ export default function DashboardPage() {
                       <td className="p-3 text-gray-500">
                         {new Date(wm.created_at).toLocaleDateString()}
                       </td>
-                      <td className="p-3 text-center">
+                      <td className="p-3 text-center flex gap-1 justify-center">
                         <button
                           onClick={() => toggleActive(wm)}
                           className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
@@ -286,6 +312,13 @@ export default function DashboardPage() {
                           }`}
                         >
                           {wm.active ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button
+                          onClick={() => removeWarehouseman(wm)}
+                          disabled={removing === wm.id}
+                          className="px-3 py-1 rounded-lg text-xs font-medium transition bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-700 disabled:opacity-50"
+                        >
+                          {removing === wm.id ? '...' : 'Remove'}
                         </button>
                       </td>
                     </tr>

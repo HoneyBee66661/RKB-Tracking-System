@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface Warehouseman {
   id: string;
@@ -12,7 +13,18 @@ export default function LoginPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-100">
+      <header className="bg-white border-b px-4 py-3 flex items-center justify-between">
+        <Link href="/" className="text-gray-500 hover:text-gray-800 transition" title="Back to Home">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+        </Link>
+        <h1 className="text-lg font-bold">Login</h1>
+        <div className="w-5" />
+      </header>
+      <div className="flex items-center justify-center p-4 pt-12">
       <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-lg">
         <h1 className="text-2xl font-bold text-center mb-2">Login</h1>
         <p className="text-center text-sm text-gray-500 mb-6">Select your role to continue</p>
@@ -37,7 +49,21 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {tab === 'warehouseman' ? <WarehousemanForm /> : <AdminForm />}
+        {/* Flip animation drawer */}
+        <div className="overflow-hidden relative" style={{ perspective: '1000px' }}>
+          <div
+            className="transition-transform duration-500 ease-in-out"
+            style={{ transformStyle: 'preserve-3d', transform: tab === 'warehouseman' ? 'rotateY(0deg)' : 'rotateY(180deg)' }}
+          >
+            <div style={{ backfaceVisibility: 'hidden' }}>
+              <WarehousemanForm />
+            </div>
+            <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+              <AdminForm />
+            </div>
+          </div>
+        </div>
+      </div>
       </div>
     </div>
   );
@@ -71,7 +97,7 @@ function WarehousemanForm() {
     const data = await res.json();
     if (data.success) {
       sessionStorage.setItem('warehouseman_session', JSON.stringify(data.data));
-      router.push('/scan');
+      router.push('/home');
     } else {
       setError(data.error || 'Login failed');
     }
@@ -88,7 +114,7 @@ function WarehousemanForm() {
         <select
           value={selectedId}
           onChange={e => setSelectedId(e.target.value)}
-          className="w-full p-3 border rounded-xl text-lg"
+          className="w-full p-3 border rounded-xl text-lg appearance-none bg-white"
         >
           <option value="">-- Select --</option>
           {warehousemen.map(w => (
@@ -105,7 +131,7 @@ function WarehousemanForm() {
           maxLength={4}
           value={pin}
           onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-          className="w-full p-3 border rounded-xl text-2xl text-center tracking-[0.5em]"
+          className="w-full p-3 border rounded-xl text-lg"
           placeholder="••••"
           onKeyDown={e => e.key === 'Enter' && handleLogin()}
         />

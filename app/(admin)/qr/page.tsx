@@ -182,9 +182,18 @@ export default function QrManagementPage() {
       <header className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-bold">QR Label Management</h1>
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-sm text-blue-600 hover:underline">Dashboard</Link>
-            <Link href="/" className="text-sm text-blue-600 hover:underline">Home</Link>
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard" className="text-gray-500 hover:text-gray-800 transition" title="Dashboard">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+            </Link>
+            <Link href="/" className="text-gray-500 hover:text-gray-800 transition" title="Home">
+              <img src="/images/home-icon.svg" alt="Home" width="20" height="20" />
+            </Link>
           </div>
         </div>
       </header>

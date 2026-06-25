@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 interface GrManifest {
@@ -32,6 +33,7 @@ export default function WarehousemanScanPage() {
   const [photoData, setPhotoData] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -44,25 +46,6 @@ export default function WarehousemanScanPage() {
     if (!raw) { router.push('/login'); return; }
     setSession(JSON.parse(raw));
   }, [router]);
-
-  // Honeywell keyboard-wedge: auto-detect scanner input
-  useEffect(() => {
-    if (inputMode !== 'scan') return;
-    const input = scanInputRef.current;
-    if (!input) return;
-    input.focus();
-
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        const code = input.value.trim();
-        if (code) resolveCode(code);
-        input.value = '';
-      }
-    };
-    input.addEventListener('keydown', handler);
-    return () => input.removeEventListener('keydown', handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputMode]);
 
   const resolveCode = async (code: string) => {
     setError('');
@@ -155,10 +138,105 @@ export default function WarehousemanScanPage() {
     router.push('/login');
   };
 
-  // Switch current warehouseman without full device logout
-  const switchOperator = () => {
-    sessionStorage.removeItem('warehouseman_session');
-    router.push('/login');
+  // Switch operator state
+  const [operatorList, setOperatorList] = useState<{ id: string; name: string; active: boolean }[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [pendingWm, setPendingWm] = useState<{ id: string; name: string } | null>(null);
+  const [switchPin, setSwitchPin] = useState('');
+  const [switchError, setSwitchError] = useState('');
+  const [switching, setSwitching] = useState(false);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [dropdownOpen]);
+
+  // Honeywell keyboard-wedge: auto-detect scanner input
+  // Always keep cursor in the scan field unless popup is open
+  useEffect(() => {
+    if (inputMode !== 'scan' || manifest || pendingWm || dropdownOpen) return;
+    const input = scanInputRef.current;
+    if (!input) return;
+    input.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        const code = input.value.trim();
+        if (code) resolveCode(code);
+        input.value = '';
+      }
+    };
+    const onBlur = () => {
+      if (!pendingWm && !dropdownOpen && inputMode === 'scan' && !manifest) {
+        setTimeout(() => input?.focus(), 50);
+      }
+    };
+
+    input.addEventListener('keydown', onKeyDown);
+    input.addEventListener('blur', onBlur);
+    return () => {
+      input.removeEventListener('keydown', onKeyDown);
+      input.removeEventListener('blur', onBlur);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputMode, manifest, pendingWm, dropdownOpen]);
+
+  // Fetch operator list when dropdown opens
+  const toggleDropdown = async () => {
+    if (dropdownOpen) { setDropdownOpen(false); return; }
+    setDropdownOpen(true);
+    try {
+      const res = await fetch('/api/warehousemen');
+      const d = await res.json();
+      if (d.success) setOperatorList(d.data);
+    } catch { /* ignore */ }
+  };
+
+  // Show PIN popup for selected operator
+  const selectOperator = (wm: { id: string; name: string }) => {
+    if (wm.id === session?.warehouseman?.id) { setDropdownOpen(false); return; }
+    setPendingWm(wm);
+    setSwitchPin('');
+    setSwitchError('');
+    setDropdownOpen(false);
+  };
+
+  // Verify PIN and switch
+  const confirmSwitch = async () => {
+    if (!pendingWm || !switchPin) { setSwitchError('Enter PIN'); return; }
+    setSwitching(true);
+    setSwitchError('');
+    try {
+      const res = await fetch('/api/warehouseman-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ warehouseman_id: pendingWm.id, pin: switchPin }),
+      });
+      const d = await res.json();
+      if (d.success) {
+        sessionStorage.setItem('warehouseman_session', JSON.stringify(d.data));
+        setSession(d.data);
+        setPendingWm(null);
+        setSwitchPin('');
+      } else {
+        setSwitchError(d.error || 'Invalid PIN');
+      }
+    } catch {
+      setSwitchError('Network error');
+    } finally {
+      setSwitching(false);
+    }
+  };
+
+  const cancelSwitch = () => {
+    setPendingWm(null);
+    setSwitchPin('');
+    setSwitchError('');
   };
 
   return (
@@ -167,15 +245,36 @@ export default function WarehousemanScanPage() {
       <header className="bg-white border-b sticky top-0 z-10 px-4 py-3 flex items-center justify-between">
         <h1 className="text-lg font-bold">Warehouse Scanner</h1>
         <div className="flex items-center gap-3">
+          <Link href="/home" className="text-gray-500 hover:text-gray-800 transition" title="Menu">
+            <img src="/images/home-icon.svg" alt="Home" width="20" height="20" />
+          </Link>
           {session && (
-            <button
-              onClick={switchOperator}
-              className="flex items-center gap-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-1.5 transition"
-              title="Switch operator"
-            >
-              <span className="text-gray-600">{session.warehouseman.name}</span>
-              <span className="text-xs text-gray-400">⇄</span>
-            </button>
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={toggleDropdown}
+                className="flex items-center gap-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-1.5 transition"
+                title="Switch operator"
+              >
+                <span className="text-gray-600">{session.warehouseman.name}</span>
+                <span className={`text-xs text-gray-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}>▼</span>
+              </button>
+              {dropdownOpen && (
+                <div className="absolute right-0 top-full mt-1 bg-white border rounded-xl shadow-lg z-20 min-w-[180px] py-1 overflow-hidden">
+                  {operatorList.filter(w => w.active !== false).map(wm => (
+                    <button
+                      key={wm.id}
+                      onClick={() => selectOperator(wm)}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition ${
+                        wm.id === session.warehouseman.id ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
+                      }`}
+                    >
+                      {wm.name}
+                      {wm.id === session.warehouseman.id && <span className="text-xs ml-2 text-blue-400">(current)</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
           <button onClick={doLogout} className="text-sm text-red-600 hover:underline">Logout</button>
         </div>
@@ -300,6 +399,45 @@ export default function WarehousemanScanPage() {
           </div>
         )}
       </div>
+
+      {/* Switch operator PIN popup */}
+      {pendingWm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <h2 className="text-xl font-bold mb-1">Switch Operator</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Enter PIN for <span className="font-semibold text-gray-800">{pendingWm.name}</span>
+            </p>
+            <input
+              type="password"
+              inputMode="numeric"
+              maxLength={4}
+              value={switchPin}
+              onChange={e => setSwitchPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              className="w-full p-3 border rounded-xl text-2xl text-center tracking-[0.5em] mb-4"
+              placeholder="••••"
+              autoFocus
+              onKeyDown={e => e.key === 'Enter' && !switching && confirmSwitch()}
+            />
+            {switchError && <p className="text-red-600 text-sm text-center mb-3">{switchError}</p>}
+            <div className="flex gap-3">
+              <button
+                onClick={cancelSwitch}
+                className="flex-1 py-3 bg-gray-200 rounded-xl font-semibold hover:bg-gray-300 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSwitch}
+                disabled={switching}
+                className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+              >
+                {switching ? 'Verifying...' : 'Switch'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
